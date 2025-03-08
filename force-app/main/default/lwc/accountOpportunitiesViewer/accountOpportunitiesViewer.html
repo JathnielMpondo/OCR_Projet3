@@ -1,18 +1,27 @@
-<template>
-    <lightning-card title="Opportunités du Compte" icon-name="standard:opportunity">
-        <div class=slds-max-large-size_xx-large>
-            <lightning-button class="slds-m-bottom_small" label="Rafraîchir" onclick={handleRafraichir} variant="brand"></lightning-button>
-            <template if:false={opportunities}>
-                <lightning-datatable data={opportunities}
-                                     columns={columns}
-                                     key-field="Id"
-                                     class="slds-box slds-theme_default">
-                </lightning-datatable>
-            </template>
-            <template if:true={error}>
-                <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_success" role="contentinfo">
-                    <span class="slds-assistive-text">Erreur</span>
-                    <h2>Une erreur s'est produite lors du chargement des opportunités.</h2>
+<template> // Le template est la structure de la page 
+    <lightning-card title="Opportunités du Compte" icon-name="standard:opportunity"> // Le composant lightning-card est un conteneur pour les autres composants
+        <div class="slds-p-around_medium"> // La classe slds-p-around_medium ajoute un padding autour du contenu
+            <lightning-button class="slds-m-bottom_small"  // Le composant lightning-button est un bouton
+                              label="Rafraîchir"  // La propriété label permet de définir le texte du bouton
+                              onclick={handleRafraichir}  // La propriété onclick permet de définir une fonction à appeler lorsqu'on clique sur le bouton
+                              variant="brand"> // La propriété variant permet de définir le style du bouton
+            </lightning-button> // La balise fermante de lightning-button 
+
+            <!-- Affichage du tableau si opportunités disponibles --> // Le composant lightning-datatable est un tableau
+            <template if:true={opportunities}> // La directive if:true permet d'afficher le composant si la condition est vraie
+                <lightning-datatable  // La balise fermante de lightning-datatable
+                    data={opportunities} // La propriété data permet de définir les données du tableau
+                    columns={columns} // La propriété columns permet de définir les colonnes du tableau
+                    key-field="Id" // La propriété key-field permet de définir la clé primaire des enregistrements
+                    class="slds-box slds-theme_default"> // La classe slds-box ajoute une bordure autour du tableau, la classe slds-theme_default définit le thème du tableau
+                </lightning-datatable> // La balise fermante de lightning-datatable 
+            </template> // La balise fermante de la directive if:true
+
+            <!-- Affichage de l'erreur si une erreur survient -->
+            <template if:true={error}> // La directive if:true permet d'afficher le composant si la condition est vraie
+                <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error" role="alert">
+                    <span class="slds-assistive-text">Erreur</span> // La classe slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error définit le style de l'alerte
+                    <h2>Une erreur s'est produite lors du chargement des opportunités.</h2> // La balise fermante de h2
                 </div>
             </template>
         </div>
