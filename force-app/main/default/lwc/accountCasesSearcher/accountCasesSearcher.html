@@ -1,24 +1,39 @@
-<template>
-    <lightning-card title="Recherche de Cas par Sujet" icon-name="standard:case">
-        <div class="slds-p-around_medium">
-            <lightning-input label="Rechercher par Sujet"
-                             value={searchTerm}
-                             onchange={updateSearchTerm}>
-            </lightning-input>
-            <lightning-button label="Rechercher"
-                              variant="brand"
-                              onclick={handleSearch}
-                              class="slds-m-top_small">
-            </lightning-button>
+<template> // Le template est la structure de la page
+    <lightning-card title="Recherche de Cas par Sujet" icon-name="standard:case"> // Le composant lightning-card est un conteneur pour les autres composants
+        <div class="slds-p-around_medium"> // La classe slds-p-around_medium ajoute un padding autour du contenu
+            <lightning-input label="Rechercher par Sujet" // Le composant lightning-input est un champ de saisie
+                             value={searchTerm} // La propriété value permet de lier la valeur du champ à une variable
+                             onchange={updateSearchTerm}> // La propriété onchange permet de définir une fonction à appeler lorsqu'une valeur est saisie
+            </lightning-input> // La balise fermante de lightning-input
+            <lightning-button label="Rechercher" // Le composant lightning-button est un bouton
+                              variant="brand" // La propriété variant permet de définir le style du bouton
+                              onclick={handleSearch} // La propriété onclick permet de définir une fonction à appeler lorsqu'on clique sur le bouton
+                              disabled={isSearchDisabled} // La propriété disabled permet de désactiver le bouton
+                              class="slds-m-top_small"> // La classe slds-m-top_small ajoute un margin-top au bouton
+            </lightning-button> // La balise fermante de lightning-button
         </div>
-        <template if:true={cases}>
-            <lightning-datatable data={cases}
-                                 columns={columns}
-                                 key-field="Id">
-            </lightning-datatable>
+
+        <!-- Indicateur de chargement --> // Le composant lightning-spinner est un spinner de chargement
+        <template if:true={isLoading}> // La directive if:true permet d'afficher le composant si la condition est vraie
+            <lightning-spinner alternative-text="Chargement..." size="medium"></lightning-spinner> // La balise fermante de lightning-spinner
         </template>
-        <template if:true={error}>
-            <p class="slds-p-around_medium slds-text-color_error">{error}</p>
+
+        <!-- Tableau des résultats -->
+        <template if:true={cases}> // La directive if:true permet d'afficher le composant si la condition est vraie
+            <lightning-datatable data={cases} // Le composant lightning-datatable est un tableau
+                                 columns={columns} // La propriété columns permet de définir les colonnes du tableau
+                                 key-field="Id"> // La propriété key-field permet de définir la clé primaire des enregistrements
+            </lightning-datatable> // La balise fermante de lightning-datatable
+        </template>
+
+        <!-- Message si aucun cas trouvé -->
+        <template if:true={isNoResults}> // La directive if:true permet d'afficher le composant si la condition est vraie
+            <p class="slds-p-around_medium">Aucun cas trouvé pour cette recherche.</p> // La classe slds-p-around_medium ajoute un padding autour du contenu
+        </template>
+
+        <!-- Message d'erreur -->
+        <template if:true={error}> // La directive if:true permet d'afficher le composant si la condition est vraie
+            <p class="slds-p-around_medium slds-text-color_error">{error}</p> // La classe slds-p-around_medium ajoute un padding autour du contenu, la classe slds-text-color_error définit la couleur du texte
         </template>
     </lightning-card>
 </template>
