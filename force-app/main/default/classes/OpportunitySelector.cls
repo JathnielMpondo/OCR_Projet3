@@ -1,16 +1,16 @@
-public with sharing class OpportunitySelector {
-    public static List<Opportunity> getOpportunitiesByAccountId(Id accountId) {
-        // Vérifier si l'ID du compte est valide
-        if (accountId == null) {
-            throw new AuraHandledException('L'ID du compte ne peut pas être vide.'); // Lancer une exception AuraHandledException
+public with sharing class OpportunitySelector { // Classe pour récupérer les opportunités associées à un compte.
+    public static List<Opportunity> getOpportunitiesByAccountId(Id accountId) {  // Récupère les opportunités associées à un compte.
+        if (accountId == null) { // Si l'ID du compte est nul.
+            // Au lieu de lever une exception, retourne simplement une liste vide.
+            return new List<Opportunity>(); // Retourne une liste vide si l'ID du compte est nul.
         }
-        // Requête SOQL sécurisée et optimisée
-        List<Opportunity> opportunities = [
-            SELECT Id, Name, Amount, CloseDate, StageName // Sélectionner les champs Id, Name, Amount, CloseDate et StageName
-            FROM Opportunity // Depuis l'objet Opportunity
-            WHERE AccountId = :accountId // Filtrer par ID de compte
-            ORDER BY CloseDate DESC // Trier par date de clôture la plus récente
+
+        List<Opportunity> opportunities = [         // Récupère les opportunités associées à un compte.
+            SELECT Id, Name, Amount, CloseDate, StageName // Sélectionne les champs de l'opportunité.
+            FROM Opportunity // Objet de requête.
+            WHERE AccountId = :accountId // Filtre sur l'ID du compte.
+            ORDER BY CloseDate DESC // Trie par date de clôture décroissante.
         ];
-        return opportunities; 
+        return (opportunities != null) ? opportunities : new List<Opportunity>(); // Si la requête SOQL renvoie "null", retourne une liste vide.
     }
 }

@@ -1,35 +1,76 @@
-import { LightningElement, api, wire, track } from 'lwc'; // Importer les éléments Lightning Web Components
-import getOpportunities from '@salesforce/apex/AccountOpportunitiesController.getOpportunities'; // Importer la méthode Apex
+import { LightningElement, api, wire, track } from 'lwc'; // Importation des modules nécessaires de LWC
+// LightningElement : classe de base pour tous les composants LWC
+// api : pour exposer une propriété aux parents du composant (exemple : passer recordId depuis une page record)
+// wire : pour appeler des méthodes Apex de manière réactive
+// track : pour rendre une variable réactive (elle se met à jour automatiquement dans le template)
+import { refreshApex } from '@salesforce/apex'; // Importation de la méthode refreshApex pour rafraîchir les données d'un appel Apex
+// Importation de la méthode Apex pour pouvoir l'appeler depuis le composant LWC
+// getOpportunities : méthode Apex qui récupère les opportunités d'un compte
+// @salesforce/apex : chemin d'accès à la méthode Apex
+// AccountOpportunitiesController : nom de la classe Apex qui contient la méthode getOpportunities
+import getOpportunities from '@salesforce/apex/AccountOpportunitiesController.getOpportunities'; // Importation de la méthode Apex pour récupérer les opportunités d'un compte
+// Importation de la méthode Apex pour récupérer les opportunités d'un compte
 
-export default class AccountOpportunitiesViewer extends LightningElement { // Déclarer la classe du composant Lightning Web Component
-    @api recordId; // Déclarer une propriété @api pour récupérer l’ID de l’enregistrement de compte
-    @track opportunities; // Déclarer une propriété @track pour stocker les opportunités à afficher
-    @track error; // Initialisé à undefined
+const COLUMNS = [ // Déclaration des colonnes de la datatable 
+    { label: 'Nom Opportunité', fieldName: 'Name', type: 'text' },
+    { label: 'Montant', fieldName: 'Amount', type: 'currency' },
+    { label: 'Date de Clôture', fieldName: 'CloseDate', type: 'date' },
+    { label: 'Phase', fieldName: 'StageName', type: 'text' }
+];
 
-    columns = [ // Définir les colonnes de la table des opportunités à afficher dans le composant Lightning-datatable
-        { label: 'Nom Opportunité', fieldName: 'Name', type: 'text' }, // Chaque colonne est un objet avec un label, un fieldName et un type
-        { label: 'Montant', fieldName: 'Amount', type: 'currency' }, // Le fieldName correspond au nom du champ de l’objet Opportunity
-        { label: 'Date de Clôture', fieldName: 'CloseDate', type: 'date' }, // Le type définit le type de données à afficher
-        { label: 'Phase', fieldName: 'StageName', type: 'text' } // Le type 'currency' affiche la valeur comme une devise
-    ];
+export default class AccountOpportunitiesViewer extends LightningElement { // Déclaration de la classe du composant LWC
+    // Importation des modules nécessaires de LWC :
+    // LightningElement : classe de base pour tous les composants LWC
+    // api : pour exposer une propriété aux parents du composant (exemple : passer recordId depuis une page record)
+    // wire : pour appeler des méthodes Apex de manière réactive
+    // track : pour rendre une variable réactive (elle se met à jour automatiquement dans le template)
+    // refreshApex : pour rafraîchir les données d'un appel Apex
+    // Importation de la méthode Apex pour pouvoir l'appeler depuis le composant LWC
+  
+    @api recordId;
+    @track opportunities;
+    @track error;
+    @track searchTerm = ''; 
+    columns = COLUMNS;
+    wiredOpportunitiesData; // Variable pour stocker la réponse de l'appel Apex 
 
-    @wire(getOpportunities, { recordId: '$recordId' }) // Appeler la méthode Apex avec les paramètres
-    wiredOpportunities({ error, data }) { // Traiter le résultat de la méthode Apex
-        if (data) { // Si des données sont retournées
-            this.opportunities = data; // Mettre à jour la propriété opportunities avec les opportunités retournées
-            this.error = undefined; // Initialiser la propriété error à undefined
-        } else if (error) { // Si une erreur est retournée
-            this.error = this.getErrorMessage(error); // Mettre à jour la propriété error avec le message d’erreur
-            this.opportunities = undefined; // Initialiser la propriété opportunities à undefined
+    @wire(getOpportunities, { recordId: '$recordId' }) // Appel de la méthode Apex getOpportunities 
+    wiredOpportunities(result) {
+        this.wiredOpportunitiesData = result; // Stocke la réponse pour le rafraîchissement
+        const { data, error } = result;
+
+        if (data) {
+            this.opportunities = data;
+            this.error = undefined;
+        } else if (error) {
+            this.error = error;
+            this.opportunities = undefined;
         }
     }
 
-    getErrorMessage(error) { // Déclarer une méthode pour obtenir le message d’erreur
-        if (Array.isArray(error.body)) { // Si l’erreur est un tableau d’erreurs avec des messages d’erreur individuels 
-            return error.body.map(e => e.message).join(', '); // Retourner les messages d’erreur séparés par une virgule
-        } else if (typeof error.body.message === 'string') { // Si l’erreur est un objet avec un message d’erreur
-            return error.body.message; // Retourner le message d’erreur 
-        }
-        return 'Une erreur est survenue.'; // Retourner un message d’erreur par défaut si aucun message n’est trouvé 
+    updateSearchTerm(event) {
+        this.searchTerm = event.target.value;
+    }
+
+    handleSearch() {
+        getOpportunities({ accountId: this.recordId })
+            .then(result => {
+                if (this.searchTerm) {
+                    this.opportunities = result.filter(opp =>
+                        opp.Name.toLowerCase().includes(this.searchTerm.toLowerCase())
+                    );
+                } else {
+                    this.opportunities = result;
+                }
+                this.error = undefined; // On efface toute erreur précédente si la recherche réussit 
+            })
+            .catch(error => {
+                this.error = 'Une erreur est survenue lors de la recherche des opportunités.';
+                this.opportunities = undefined;
+            });
+    }
+
+    handleRafraichir() {
+        refreshApex(this.wiredOpportunitiesData); // Rafraîchit les données en appelant Apex à nouveau
     }
 }

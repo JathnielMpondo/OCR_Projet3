@@ -1,14 +1,21 @@
-public with sharing class AccountCasesController { // classe publique AccountCasesController respectant les règles de partage Salesforce
-    @AuraEnabled
-    public static List<Case> findCasesBySubject(String accountId) { // méthode findCasesBySubject avec un paramètre accountId de type String
-        if (String.isEmpty(accountId)) { // si accountId est vide
-            throw new AuraHandledException('L'ID du compte ne peut pas être vide.'); // lancer une exception AuraHandledException
-        }
+public with sharing class AccountCasesController { // Implémente la logique métier pour le composant LWC "accountCases".
+    // Déclaration d'une classe publique avec partage activé
+    // Cela signifie que les règles de partage Salesforce sont respectées
 
-        return [ // retourner une liste de cases
-            SELECT Id, Subject, Status, Priority // sélectionner les champs Id, Subject, Status et Priority
-            FROM Case // depuis l'objet Case
-            WHERE AccountId = :accountId // où AccountId est égal à accountId
-        ];
+    @AuraEnabled 
+    // Annotation permettant d'utiliser cette méthode dans un composant Lightning
+
+    public static List<Case> findCasesBySubject(String subjectSearchTerm, Id accountId) { 
+        // Déclaration d'une méthode publique et statique qui retourne une liste d'objets Case
+        // Elle prend un paramètre accountId de type String
+
+        //if (String.isEmpty(accountId)) { 
+            // Vérifie si la chaîne accountId est vide
+
+           // throw new AuraHandledException('L\'ID du compte ne peut pas être vide.'); 
+            // Si oui, lance une exception qui sera captée dans un composant Lightning
+       // }
+        return AccountCasesSelector.getCasesByAccountIdAndSubject(subjectSearchTerm, accountId);
+        // Appelle la méthode de la classe AccountCasesSelector pour récupérer les cas liés à un compte 
     }
 }

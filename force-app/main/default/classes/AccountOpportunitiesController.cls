@@ -1,8 +1,13 @@
-public with sharing class AccountOpportunitiesController { // classe publique AccountOpportunitiesController
-    @AuraEnabled(Cacheable=true) // annotation AuraEnabled avec l'attribut Cacheable=true
-    public static List<Opportunity> getOpportunities(Id accountId) { // méthode getOpportunities avec un paramètre accountId de type Id
-        if (accountId == null) {
-            throw new AuraHandledException("L'ID du compte ne peut pas être vide."); // lancer une exception AuraHandledException
+public with sharing class AccountOpportunitiesController { // Implémente la logique métier pour le composant LWC "accountOpportunities".
+    @AuraEnabled(Cacheable=true) // Permet de mettre en cache les résultats de cette méthode.
+    public static List<Opportunity> getOpportunities(Id accountId) { // Retourne une liste d'opportunités pour un compte donné.
+        
+        if (accountId == null) { // Vérifie si "accountId" est null.
+            // Au lieu de lever une exception, retourne simplement une liste vide.
+            return new List<Opportunity>(); // Retourne une liste vide si "accountId" est null.
         }
-        return OpportunitySelector.getOpportunitiesByAccountId(accountId); // retourner les opportunités associées à l'ID du compte
+        List<Opportunity> opportunities = OpportunitySelector.getOpportunitiesByAccountId(accountId); // Récupère les opportunités pour un compte donné. 
+        return (opportunities != null) ? opportunities : new List<Opportunity>(); // Retourne les opportunités si elles existent.
+        // Si "opportunities" est null, retourne une liste vide.
     }
+}
